@@ -32,11 +32,10 @@ async function run() {
     const cartcollection = client.db("foodhubs").collection("carts");
     const userscollection = client.db("foodhubs").collection("users");
 
-    
 // jwt related apis
 app.post("/jwt", async(req,res)=>{
   const user = req.body;
-  const token = jwt.sign(user, process.env.SECRET_KEY,{expiresIn:"1h"});
+  const token = jwt.sign(user, process.env.SECRET_KEY,{expiresIn:"1d"});
   res.send({token})
 })
 
@@ -122,7 +121,43 @@ app.get("/menu",async (req,res) =>{
     res.send(result);
 })
 
+app.get('/menu/:id', async(req,res) =>{
+  const id = req.params.id;
+    const query = { _id: id };  // Convert string id to ObjectId
+    const result = await menucollection.findOne(query);
+ res.send(result)
+})
 
+app.patch('/menu/:id', async (req,res) =>{
+  const item = req.body;
+  const id = req.params.id;
+  const filter = {_id: id};
+  const updatedDoc = {
+    $set:{
+      name: item.name,
+      category:item.category,
+      price:item.price,
+      recipe:item.recipe,
+      image:item.image
+    }
+  }
+  const result =await menucollection.updateOne(filter, updatedDoc);
+   res.send(result)
+  
+})
+
+app.post("/menu", async(req,res) =>{
+ const menu = req.body;
+  const result =await menucollection.insertOne(menu);
+  res.send(result)
+})
+
+app.delete("/menu/:id", async(req,res) =>{
+  const  id = req.params.id;
+  const query = {_id : new ObjectId(id)};
+  const result =await menucollection.deleteOne(query);
+  res.send(result)
+})
 // ********************************cart related api*****************************
 app.post("/cart",async(req,res)=>{
   const cartData = req.body;
